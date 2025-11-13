@@ -1,0 +1,129 @@
+---
+title: "Creación de tablas con {gt}"
+format: html
+editor: visual
+---
+
+```{r paquetes}
+#| message: false
+
+library(readr)
+library(dplyr)
+library(gt)
+library(glue)
+library(tidyr)
+library(stringr)
+```
+
+```{r datos}
+#| message: false
+#| cache: true
+desarrollo <- read_csv("datos/desarrollo_2010-2021.csv")
+```
+
+## Ejemplo 1: convertir un  dataframe en un objeto gt
+
+```{r}
+desarrollo |> 
+  filter(anio == 2020, subregion_onu == "América Latina y el Caribe") |> 
+  select(pais, tasa_fertilidad) |> 
+  slice_min(tasa_fertilidad, n = 5)
+```
+
+## Ejemplo 2: agregamos estructura
+
+```{r}
+desarrollo |> 
+  filter(anio == 2020, subregion_onu == "América Latina y el Caribe") |> 
+  select(pais, exp_vida) |> 
+  slice_max(exp_vida, n = 5)
+```
+
+## Ejemplo 3: más estructura y algo de formato
+
+```{r}
+
+desarrollo |> 
+  filter(anio == 2021, pais %in% c("México", "Colombia", "Brasil", "Perú")) |> 
+  select(pais, pib_percap, uso_internet, celulares_100)
+
+```
+
+## Ejemplo 4: otras cosas sobre estructura
+
+```{r}
+
+desarrollo |> 
+  filter(anio %in% 2019:2021) |> 
+  group_by(continente, anio) |> 
+  summarise(min_internet = min(uso_internet, na.rm = TRUE),
+            max_internet = max(uso_internet, na.rm = TRUE),
+            promedio = mean(uso_internet, na.rm = TRUE))
+```
+
+## Ejemplo 5: nanoplots
+
+```{r}
+desarrollo |> 
+  filter(pais %in% c("Costa Rica", "Panamá", "Ecuador", "Bolivia"), 
+         anio %in% 2012:2021) |> 
+  select(pais, anio, uso_internet) |> 
+  pivot_wider(names_from = anio, 
+              values_from = uso_internet,
+              names_prefix = "internet_"
+              )
+```
+
+## Ejemplo 6: más nanoplots
+
+```{r}
+desarrollo |> 
+  filter(pais %in% c("Costa Rica", "Panamá", "Ecuador", "Bolivia"), 
+         anio %in% 2012:2021) |> 
+  select(pais, anio, banda_ancha_100, celulares_100) |> 
+  pivot_wider(names_from = anio, 
+              values_from = c(banda_ancha_100, celulares_100)
+              )
+```
+
+## Ejemplo 7: colorear celdas según condiciones
+
+```{r}
+
+desarrollo |> 
+  filter(pais %in% c("Argentina", "Bolivia", "Chile", "Colombia", "Ecuador", "Paraguay", "Perú", "Uruguay", "Venezuela"), 
+         anio %in% 2020:2021) |> 
+  select(pais, anio, felicidad, corrupcion) |> 
+  pivot_wider(names_from = anio,
+              values_from = c(felicidad, corrupcion)) |> 
+   mutate(felicidad_diferencia = felicidad_2021 - felicidad_2020, .after = felicidad_2021) |> 
+  mutate(corrupcion_diferencia = corrupcion_2021 - corrupcion_2020, .after = corrupcion_2021) 
+
+```
+
+## Ejemplo 8: colorear una columna con una paleta
+
+```{r}
+desarrollo |> 
+  filter(pais %in% c("Argentina", "Bolivia", "Chile", "Colombia", "Ecuador", "Paraguay", "Perú", "Uruguay", "Venezuela"), 
+         anio %in% 2020:2021) |> 
+  select(pais, anio, tasa_fertilidad) |> 
+  pivot_wider(names_from = anio,
+              values_from = tasa_fertilidad,
+              names_prefix = "fertilidad_") |> 
+  mutate(fertilidad_diferencia = fertilidad_2021 - fertilidad_2020)
+
+```
+
+
+## Ejemplo 10: editar el estilo
+
+```{r}
+desarrollo |> 
+  filter(anio == 2021, subregion_onu == "América Latina y el Caribe") |> 
+  select(pais, exp_vida) |> 
+  slice_max(exp_vida, n = 10)
+
+```
+
+
